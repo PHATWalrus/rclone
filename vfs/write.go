@@ -37,6 +37,9 @@ var (
 )
 
 func newWriteFileHandle(d *Dir, f *File, remote string, flags int) (*WriteFileHandle, error) {
+	if f.IsSymlink() {
+		remote += fs.LinkSuffix
+	}
 	fh := &WriteFileHandle{
 		remote: remote,
 		flags:  flags,
@@ -203,11 +206,9 @@ func (fh *WriteFileHandle) close() (err error) {
 	if err == nil {
 		fh.file.setObject(fh.o)
 		err = writeCloseErr
-	} else {
+	} else if fh.file.getObject() == nil {
 		// Remove vfs file entry when no object is present
-		if fh.file.getObject() == nil {
-			_ = fh.file.Remove()
-		}
+		_ = fh.file.Remove()
 	}
 	return err
 }

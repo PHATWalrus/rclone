@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	mathrand "math/rand"
 	"os"
 	"path/filepath"
@@ -46,6 +45,9 @@ const (
 
 	// ConfigTokenURL is the config key used to store the token server endpoint
 	ConfigTokenURL = "token_url"
+
+	// ConfigClientCredentials - use OAUTH2 client credentials
+	ConfigClientCredentials = "client_credentials"
 
 	// ConfigEncoding is the config key to change the encoding for a backend
 	ConfigEncoding = "encoding"
@@ -372,7 +374,7 @@ func LoadedData() Storage {
 			}
 			dataLoaded = true
 		} else {
-			log.Fatalf("Failed to load config file %q: %v", configPath, err)
+			fs.Fatalf(nil, "Failed to load config file %q: %v", configPath, err)
 		}
 	}
 	return data
@@ -512,6 +514,8 @@ type UpdateRemoteOpt struct {
 	Obscure bool `json:"obscure"`
 	// Treat all passwords as obscured
 	NoObscure bool `json:"noObscure"`
+	// Don't provide any output
+	NoOutput bool `json:"noOutput"`
 	// Don't interact with the user - return questions
 	NonInteractive bool `json:"nonInteractive"`
 	// If set then supply state and result parameters to continue the process

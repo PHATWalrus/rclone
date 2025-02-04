@@ -5,7 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -311,7 +310,7 @@ func NewMountCommand(commandName string, hidden bool, mount MountFn) *cobra.Comm
 					err = mnt.Wait()
 				}
 				if err != nil {
-					log.Fatalf("Fatal error: %v", err)
+					fs.Fatalf(nil, "Fatal error: %v", err)
 				}
 				return
 			}
@@ -339,7 +338,7 @@ func NewMountCommand(commandName string, hidden bool, mount MountFn) *cobra.Comm
 				atexit.Unregister(handle)
 			}
 			if err != nil {
-				log.Fatalf("Fatal error: %v", err)
+				fs.Fatalf(nil, "Fatal error: %v", err)
 			}
 		},
 	}
@@ -374,6 +373,9 @@ func (m *MountPoint) Mount() (mountDaemon *os.Process, err error) {
 
 	m.ErrChan, m.UnmountFn, err = m.MountFn(m.VFS, m.MountPoint, &m.MountOpt)
 	if err != nil {
+		if len(os.Args) > 0 && strings.HasPrefix(os.Args[0], "/snap/") {
+			return nil, fmt.Errorf("mounting is not supported when running from snap")
+		}
 		return nil, fmt.Errorf("failed to mount FUSE fs: %w", err)
 	}
 	m.MountedOn = time.Now()

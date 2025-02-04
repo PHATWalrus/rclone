@@ -36,8 +36,8 @@ import (
 	"github.com/aws/smithy-go/logging"
 	"github.com/aws/smithy-go/middleware"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
-
 	"github.com/ncw/swift/v2"
+
 	"github.com/rclone/rclone/fs"
 	"github.com/rclone/rclone/fs/accounting"
 	"github.com/rclone/rclone/fs/chunksize"
@@ -137,6 +137,9 @@ var providerOption = fs.Option{
 		Value: "Netease",
 		Help:  "Netease Object Storage (NOS)",
 	}, {
+		Value: "Outscale",
+		Help:  "OUTSCALE Object Storage (OOS)",
+	}, {
 		Value: "Petabox",
 		Help:  "Petabox Object Storage",
 	}, {
@@ -151,6 +154,9 @@ var providerOption = fs.Option{
 	}, {
 		Value: "SeaweedFS",
 		Help:  "SeaweedFS S3",
+	}, {
+		Value: "Selectel",
+		Help:  "Selectel Object Storage",
 	}, {
 		Value: "StackPath",
 		Help:  "StackPath Object Storage",
@@ -491,6 +497,26 @@ func init() {
 		}, {
 			Name:     "region",
 			Help:     "Region where your bucket will be created and your data stored.\n",
+			Provider: "Outscale",
+			Examples: []fs.OptionExample{{
+				Value: "eu-west-2",
+				Help:  "Paris, France",
+			}, {
+				Value: "us-east-2",
+				Help:  "New Jersey, USA",
+			}, {
+				Value: "us-west-1",
+				Help:  "California, USA",
+			}, {
+				Value: "cloudgouv-eu-west-1",
+				Help:  "SecNumCloud, Paris, France",
+			}, {
+				Value: "ap-northeast-1",
+				Help:  "Tokyo, Japan",
+			}},
+		}, {
+			Name:     "region",
+			Help:     "Region where your bucket will be created and your data stored.\n",
 			Provider: "Petabox",
 			Examples: []fs.OptionExample{{
 				Value: "us-east-1",
@@ -529,9 +555,18 @@ func init() {
 				Help:  "Asia (Taiwan)",
 			}},
 		}, {
+			// See endpoints for object storage regions: https://docs.selectel.ru/en/cloud/object-storage/manage/domains/#s3-api-domains
+			Name:     "region",
+			Help:     "Region where your data stored.\n",
+			Provider: "Selectel",
+			Examples: []fs.OptionExample{{
+				Value: "ru-1",
+				Help:  "St. Petersburg",
+			}},
+		}, {
 			Name:     "region",
 			Help:     "Region to connect to.\n\nLeave blank if you are using an S3 clone and you don't have a region.",
-			Provider: "!AWS,Alibaba,ArvanCloud,ChinaMobile,Cloudflare,IONOS,Petabox,Liara,Linode,Magalu,Qiniu,RackCorp,Scaleway,Storj,Synology,TencentCOS,HuaweiOBS,IDrive",
+			Provider: "!AWS,Alibaba,ArvanCloud,ChinaMobile,Cloudflare,IONOS,Petabox,Liara,Linode,Magalu,Qiniu,RackCorp,Scaleway,Selectel,Storj,Synology,TencentCOS,HuaweiOBS,IDrive",
 			Examples: []fs.OptionExample{{
 				Value: "",
 				Help:  "Use this if unsure.\nWill use v4 signatures and an empty region.",
@@ -1297,9 +1332,18 @@ func init() {
 				Help:  "Northeast Asia Endpoint 1",
 			}},
 		}, {
+			// Selectel endpoints: https://docs.selectel.ru/en/cloud/object-storage/manage/domains/#s3-api-domains
+			Name:     "endpoint",
+			Help:     "Endpoint for Selectel Object Storage.",
+			Provider: "Selectel",
+			Examples: []fs.OptionExample{{
+				Value: "s3.ru-1.storage.selcloud.ru",
+				Help:  "Saint Petersburg",
+			}},
+		}, {
 			Name:     "endpoint",
 			Help:     "Endpoint for S3 API.\n\nRequired when using an S3 clone.",
-			Provider: "!AWS,ArvanCloud,IBMCOS,IDrive,IONOS,TencentCOS,HuaweiOBS,Alibaba,ChinaMobile,GCS,Liara,Linode,MagaluCloud,Scaleway,StackPath,Storj,Synology,RackCorp,Qiniu,Petabox",
+			Provider: "!AWS,ArvanCloud,IBMCOS,IDrive,IONOS,TencentCOS,HuaweiOBS,Alibaba,ChinaMobile,GCS,Liara,Linode,Magalu,Scaleway,Selectel,StackPath,Storj,Synology,RackCorp,Qiniu,Petabox",
 			Examples: []fs.OptionExample{{
 				Value:    "objects-us-east-1.dream.io",
 				Help:     "Dream Objects endpoint",
@@ -1311,6 +1355,10 @@ func init() {
 			}, {
 				Value:    "sfo3.digitaloceanspaces.com",
 				Help:     "DigitalOcean Spaces San Francisco 3",
+				Provider: "DigitalOcean",
+			}, {
+				Value:    "sfo2.digitaloceanspaces.com",
+				Help:     "DigitalOcean Spaces San Francisco 2",
 				Provider: "DigitalOcean",
 			}, {
 				Value:    "fra1.digitaloceanspaces.com",
@@ -1329,6 +1377,18 @@ func init() {
 				Help:     "DigitalOcean Spaces Singapore 1",
 				Provider: "DigitalOcean",
 			}, {
+				Value:    "lon1.digitaloceanspaces.com",
+				Help:     "DigitalOcean Spaces London 1",
+				Provider: "DigitalOcean",
+			}, {
+				Value:    "tor1.digitaloceanspaces.com",
+				Help:     "DigitalOcean Spaces Toronto 1",
+				Provider: "DigitalOcean",
+			}, {
+				Value:    "blr1.digitaloceanspaces.com",
+				Help:     "DigitalOcean Spaces Bangalore 1",
+				Provider: "DigitalOcean",
+			}, {
 				Value:    "localhost:8333",
 				Help:     "SeaweedFS S3 localhost",
 				Provider: "SeaweedFS",
@@ -1344,6 +1404,26 @@ func init() {
 				Value:    "s3.ap-southeast-1.lyvecloud.seagate.com",
 				Help:     "Seagate Lyve Cloud AP Southeast 1 (Singapore)",
 				Provider: "LyveCloud",
+			}, {
+				Value:    "oos.eu-west-2.outscale.com",
+				Help:     "Outscale EU West 2 (Paris)",
+				Provider: "Outscale",
+			}, {
+				Value:    "oos.us-east-2.outscale.com",
+				Help:     "Outscale US east 2 (New Jersey)",
+				Provider: "Outscale",
+			}, {
+				Value:    "oos.us-west-1.outscale.com",
+				Help:     "Outscale EU West 1 (California)",
+				Provider: "Outscale",
+			}, {
+				Value:    "oos.cloudgouv-eu-west-1.outscale.com",
+				Help:     "Outscale SecNumCloud (Paris)",
+				Provider: "Outscale",
+			}, {
+				Value:    "oos.ap-northeast-1.outscale.com",
+				Help:     "Outscale AP Northeast 1 (Japan)",
+				Provider: "Outscale",
 			}, {
 				Value:    "s3.wasabisys.com",
 				Help:     "Wasabi US East 1 (N. Virginia)",
@@ -1381,6 +1461,10 @@ func init() {
 				Help:     "Wasabi EU West 2 (Paris)",
 				Provider: "Wasabi",
 			}, {
+				Value:    "s3.eu-south-1.wasabisys.com",
+				Help:     "Wasabi EU South 1 (Milan)",
+				Provider: "Wasabi",
+			}, {
 				Value:    "s3.ap-northeast-1.wasabisys.com",
 				Help:     "Wasabi AP Northeast 1 (Tokyo) endpoint",
 				Provider: "Wasabi",
@@ -1408,14 +1492,6 @@ func init() {
 				Value:    "s3.ir-tbz-sh1.arvanstorage.ir",
 				Help:     "ArvanCloud Tabriz Iran (Shahriar) endpoint",
 				Provider: "ArvanCloud",
-			}, {
-				Value:    "br-se1.magaluobjects.com",
-				Help:     "Magalu BR Southeast 1 endpoint",
-				Provider: "Magalu",
-			}, {
-				Value:    "br-ne1.magaluobjects.com",
-				Help:     "Magalu BR Northeast 1 endpoint",
-				Provider: "Magalu",
 			}},
 		}, {
 			Name:     "location_constraint",
@@ -1798,7 +1874,7 @@ func init() {
 		}, {
 			Name:     "location_constraint",
 			Help:     "Location constraint - must be set to match the Region.\n\nLeave blank if not sure. Used when creating buckets only.",
-			Provider: "!AWS,Alibaba,ArvanCloud,HuaweiOBS,ChinaMobile,Cloudflare,IBMCOS,IDrive,IONOS,Leviia,Liara,Linode,Magalu,Qiniu,RackCorp,Scaleway,StackPath,Storj,TencentCOS,Petabox",
+			Provider: "!AWS,Alibaba,ArvanCloud,HuaweiOBS,ChinaMobile,Cloudflare,IBMCOS,IDrive,IONOS,Leviia,Liara,Linode,Magalu,Outscale,Qiniu,RackCorp,Scaleway,Selectel,StackPath,Storj,TencentCOS,Petabox",
 		}, {
 			Name: "acl",
 			Help: `Canned ACL used when creating buckets and storing or copying objects.
@@ -1813,7 +1889,7 @@ doesn't copy the ACL from the source but rather writes a fresh one.
 If the acl is an empty string then no X-Amz-Acl: header is added and
 the default (private) will be used.
 `,
-			Provider: "!Storj,Synology,Cloudflare",
+			Provider: "!Storj,Selectel,Synology,Cloudflare",
 			Examples: []fs.OptionExample{{
 				Value:    "default",
 				Help:     "Owner gets Full_CONTROL.\nNo one else has access rights (default).",
@@ -1988,7 +2064,7 @@ If you leave it blank, this is calculated automatically from the sse_customer_ke
 				Help:  "One Zone Infrequent Access storage class",
 			}, {
 				Value: "GLACIER",
-				Help:  "Glacier storage class",
+				Help:  "Glacier Flexible Retrieval storage class",
 			}, {
 				Value: "DEEP_ARCHIVE",
 				Help:  "Glacier Deep Archive storage class",
@@ -2054,13 +2130,16 @@ If you leave it blank, this is calculated automatically from the sse_customer_ke
 				Help:  "Standard storage class",
 			}},
 		}, {
-			// Mapping from here: #todo
+			// Mapping from here: https://docs.magalu.cloud/docs/storage/object-storage/Classes-de-Armazenamento/standard
 			Name:     "storage_class",
 			Help:     "The storage class to use when storing new objects in Magalu.",
 			Provider: "Magalu",
 			Examples: []fs.OptionExample{{
 				Value: "STANDARD",
 				Help:  "Standard storage class",
+			}, {
+				Value: "GLACIER_IR",
+				Help:  "Glacier Instant Retrieval storage class",
 			}},
 		}, {
 			// Mapping from here: https://intl.cloud.tencent.com/document/product/436/30925
@@ -2607,6 +2686,35 @@ knows about - please make a bug report if not.
 			Default:  fs.Tristate{},
 			Advanced: true,
 		}, {
+			Name: "directory_bucket",
+			Help: strings.ReplaceAll(`Set to use AWS Directory Buckets
+
+If you are using an AWS Directory Bucket then set this flag.
+
+This will ensure no |Content-Md5| headers are sent and ensure |ETag|
+headers are not interpreted as MD5 sums. |X-Amz-Meta-Md5chksum| will
+be set on all objects whether single or multipart uploaded.
+
+This also sets |no_check_bucket = true|.
+
+Note that Directory Buckets do not support:
+
+- Versioning
+- |Content-Encoding: gzip|
+
+Rclone limitations with Directory Buckets:
+
+- rclone does not support creating Directory Buckets with |rclone mkdir|
+- ... or removing them with |rclone rmdir| yet
+- Directory Buckets do not appear when doing |rclone lsf| at the top level.
+- Rclone can't remove auto created directories yet. In theory this should
+  work with |directory_markers = true| but it doesn't.
+- Directories don't seem to appear in recursive (ListR) listings.
+`, "|", "`"),
+			Default:  false,
+			Advanced: true,
+			Provider: "AWS",
+		}, {
 			Name: "sdk_log_mode",
 			Help: strings.ReplaceAll(`Set to debug the SDK
 
@@ -2628,6 +2736,16 @@ use |-vv| to see the debug level logs.
 			Default:  sdkLogMode(0),
 			Advanced: true,
 		},
+			{
+				Name:     "ibm_api_key",
+				Help:     "IBM API Key to be used to obtain IAM token",
+				Provider: "IBMCOS",
+			},
+			{
+				Name:     "ibm_resource_instance_id",
+				Help:     "IBM service instance id",
+				Provider: "IBMCOS",
+			},
 		}})
 }
 
@@ -2780,6 +2898,9 @@ type Options struct {
 	UseMultipartUploads   fs.Tristate          `config:"use_multipart_uploads"`
 	UseUnsignedPayload    fs.Tristate          `config:"use_unsigned_payload"`
 	SDKLogMode            sdkLogMode           `config:"sdk_log_mode"`
+	DirectoryBucket       bool                 `config:"directory_bucket"`
+	IBMAPIKey             string               `config:"ibm_api_key"`
+	IBMInstanceID         string               `config:"ibm_resource_instance_id"`
 }
 
 // Fs represents a remote s3 server
@@ -3052,9 +3173,17 @@ func (s3logger) Logf(classification logging.Classification, format string, v ...
 func s3Connection(ctx context.Context, opt *Options, client *http.Client) (s3Client *s3.Client, err error) {
 	ci := fs.GetConfig(ctx)
 	var awsConfig aws.Config
+	// Make the default static auth
+	v := aws.Credentials{
+		AccessKeyID:     opt.AccessKeyID,
+		SecretAccessKey: opt.SecretAccessKey,
+		SessionToken:    opt.SessionToken,
+	}
+	awsConfig.Credentials = &credentials.StaticCredentialsProvider{Value: v}
 
 	// Try to fill in the config from the environment if env_auth=true
-	if opt.EnvAuth {
+	if opt.EnvAuth && opt.AccessKeyID == "" && opt.SecretAccessKey == "" {
+
 		configOpts := []func(*awsconfig.LoadOptions) error{}
 		// Set the name of the profile if supplied
 		if opt.Profile != "" {
@@ -3068,8 +3197,12 @@ func s3Connection(ctx context.Context, opt *Options, client *http.Client) (s3Cli
 		if err != nil {
 			return nil, fmt.Errorf("couldn't load configuration with env_auth=true: %w", err)
 		}
+
 	} else {
 		switch {
+		case opt.Provider == "IBMCOS" && opt.V2Auth:
+			awsConfig.Credentials = &NoOpCredentialsProvider{}
+			fs.Debugf(nil, "Using IBM IAM")
 		case opt.AccessKeyID == "" && opt.SecretAccessKey == "":
 			// if no access key/secret and iam is explicitly disabled then fall back to anon interaction
 			awsConfig.Credentials = aws.AnonymousCredentials{}
@@ -3079,13 +3212,7 @@ func s3Connection(ctx context.Context, opt *Options, client *http.Client) (s3Cli
 		case opt.SecretAccessKey == "":
 			return nil, errors.New("secret_access_key not found")
 		default:
-			// Make the static auth
-			v := aws.Credentials{
-				AccessKeyID:     opt.AccessKeyID,
-				SecretAccessKey: opt.SecretAccessKey,
-				SessionToken:    opt.SessionToken,
-			}
-			awsConfig.Credentials = &credentials.StaticCredentialsProvider{Value: v}
+			// static credentials are already set
 		}
 	}
 
@@ -3129,9 +3256,15 @@ func s3Connection(ctx context.Context, opt *Options, client *http.Client) (s3Cli
 
 	if opt.V2Auth || opt.Region == "other-v2-signature" {
 		fs.Debugf(nil, "Using v2 auth")
-		options = append(options, func(s3Opt *s3.Options) {
-			s3Opt.HTTPSignerV4 = &v2Signer{opt: opt}
-		})
+		if opt.Provider == "IBMCOS" && opt.IBMAPIKey != "" && opt.IBMInstanceID != "" {
+			options = append(options, func(s3Opt *s3.Options) {
+				s3Opt.HTTPSignerV4 = &IbmIamSigner{APIKey: opt.IBMAPIKey, InstanceID: opt.IBMInstanceID}
+			})
+		} else {
+			options = append(options, func(s3Opt *s3.Options) {
+				s3Opt.HTTPSignerV4 = &v2Signer{opt: opt}
+			})
+		}
 	}
 
 	if opt.Provider == "GCS" {
@@ -3215,7 +3348,7 @@ func setEndpointValueForIDriveE2(m configmap.Mapper) (err error) {
 	// API to get user region endpoint against the Access Key details: https://www.idrive.com/e2/guides/get_region_endpoint
 	resp, err := client.Post("https://api.idrivee2.com/api/service/get_region_end_point",
 		"application/json",
-		strings.NewReader(`{"access_key": "`+value+`"}`))
+		strings.NewReader(`{"access_key": `+strconv.Quote(value)+`}`))
 	if err != nil {
 		return
 	}
@@ -3245,7 +3378,7 @@ func setQuirks(opt *Options) {
 		listObjectsV2         = true // Always use ListObjectsV2 instead of ListObjects
 		virtualHostStyle      = true // Use bucket.provider.com instead of putting the bucket in the URL
 		urlEncodeListings     = true // URL encode the listings to help with control characters
-		useMultipartEtag      = true // Set if Etags for multpart uploads are compatible with AWS
+		useMultipartEtag      = true // Set if Etags for multipart uploads are compatible with AWS
 		useAcceptEncodingGzip = true // Set Accept-Encoding: gzip
 		mightGzip             = true // assume all providers might use content encoding gzip until proven otherwise
 		useAlreadyExists      = true // Set if provider returns AlreadyOwnedByYou or no error if you try to remake your own bucket
@@ -3328,6 +3461,8 @@ func setQuirks(opt *Options) {
 		urlEncodeListings = false
 		useMultipartEtag = false // untested
 		useAlreadyExists = false // untested
+	case "Outscale":
+		virtualHostStyle = false
 	case "RackCorp":
 		// No quirks
 		useMultipartEtag = false // untested
@@ -3350,6 +3485,8 @@ func setQuirks(opt *Options) {
 		}
 		urlEncodeListings = true
 		useAlreadyExists = true
+	case "Selectel":
+		urlEncodeListings = false
 	case "SeaweedFS":
 		listObjectsV2 = false // untested
 		virtualHostStyle = false
@@ -3367,6 +3504,10 @@ func setQuirks(opt *Options) {
 			opt.ChunkSize = 64 * fs.Mebi
 		}
 		useAlreadyExists = false // returns BucketAlreadyExists
+		// Storj doesn't support multi-part server side copy:
+		// https://github.com/storj/roadmap/issues/40
+		// So make cutoff very large which it does support
+		opt.CopyCutoff = math.MaxInt64
 	case "Synology":
 		useMultipartEtag = false
 		useAlreadyExists = false // untested
@@ -3392,7 +3533,7 @@ func setQuirks(opt *Options) {
 		// See: https://issuetracker.google.com/issues/323465186
 		// So make cutoff very large which it does seem to support
 		opt.CopyCutoff = math.MaxInt64
-	default:
+	default: //nolint:gocritic // Don't include gocritic when running golangci-lint to avoid defaultCaseOrder: consider to make `default` case as first or as last case
 		fs.Logf("s3", "s3 provider %q not known - please set correctly", opt.Provider)
 		fallthrough
 	case "Other":
@@ -3547,6 +3688,14 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 		// MD5 digest of their object data.
 		f.etagIsNotMD5 = true
 	}
+	if opt.DirectoryBucket {
+		// Objects uploaded to directory buckets appear to have random ETags
+		//
+		// This doesn't appear to be documented
+		f.etagIsNotMD5 = true
+		// The normal API doesn't work for creating directory buckets, so don't try
+		f.opt.NoCheckBucket = true
+	}
 	f.setRoot(root)
 	f.features = (&fs.Features{
 		ReadMimeType:      true,
@@ -3566,6 +3715,9 @@ func NewFs(ctx context.Context, name, root string, m configmap.Mapper) (fs.Fs, e
 	}
 	if opt.Provider == "IDrive" {
 		f.features.SetTier = false
+	}
+	if opt.Provider == "AWS" {
+		f.features.DoubleSlash = true
 	}
 	if opt.DirectoryMarkers {
 		f.features.CanHaveEmptyDirectories = true
@@ -3889,7 +4041,7 @@ func versionLess(a, b *types.ObjectVersion) bool {
 	if *a.Key > *b.Key {
 		return false
 	}
-	dt := (*a.LastModified).Sub(*b.LastModified)
+	dt := a.LastModified.Sub(*b.LastModified)
 	if dt > 0 {
 		return true
 	}
@@ -4038,7 +4190,7 @@ func (f *Fs) list(ctx context.Context, opt listOpt, fn listFn) error {
 		opt.prefix += "/"
 	}
 	if !opt.findFile {
-		if opt.directory != "" {
+		if opt.directory != "" && (opt.prefix == "" && !bucket.IsAllSlashes(opt.directory) || opt.prefix != "" && !strings.HasSuffix(opt.directory, "/")) {
 			opt.directory += "/"
 		}
 	}
@@ -4135,14 +4287,18 @@ func (f *Fs) list(ctx context.Context, opt listOpt, fn listFn) error {
 				}
 				remote = f.opt.Enc.ToStandardPath(remote)
 				if !strings.HasPrefix(remote, opt.prefix) {
-					fs.Logf(f, "Odd name received %q", remote)
+					fs.Logf(f, "Odd directory name received %q", remote)
 					continue
 				}
 				remote = remote[len(opt.prefix):]
+				// Trim one slash off the remote name
+				remote, _ = strings.CutSuffix(remote, "/")
+				if remote == "" || bucket.IsAllSlashes(remote) {
+					remote += "/"
+				}
 				if opt.addBucket {
 					remote = bucket.Join(opt.bucket, remote)
 				}
-				remote = strings.TrimSuffix(remote, "/")
 				err = fn(remote, &types.Object{Key: &remote}, nil, true)
 				if err != nil {
 					if err == errEndList {
@@ -4173,11 +4329,9 @@ func (f *Fs) list(ctx context.Context, opt listOpt, fn listFn) error {
 				if opt.noSkipMarkers {
 					// process directory markers as files
 					isDirectory = false
-				} else {
+				} else if remote == f.opt.Enc.ToStandardPath(opt.directory) {
 					// Don't insert the root directory
-					if remote == f.opt.Enc.ToStandardPath(opt.directory) {
-						continue
-					}
+					continue
 				}
 			}
 			remote = remote[len(opt.prefix):]
@@ -4813,15 +4967,16 @@ func (f *Fs) PublicLink(ctx context.Context, remote string, expire fs.Duration, 
 
 var commandHelp = []fs.CommandHelp{{
 	Name:  "restore",
-	Short: "Restore objects from GLACIER to normal storage",
-	Long: `This command can be used to restore one or more objects from GLACIER
-to normal storage.
+	Short: "Restore objects from GLACIER or INTELLIGENT-TIERING archive tier",
+	Long: `This command can be used to restore one or more objects from GLACIER to normal storage 
+or from INTELLIGENT-TIERING Archive Access / Deep Archive Access tier to the Frequent Access tier.
 
 Usage Examples:
 
     rclone backend restore s3:bucket/path/to/object -o priority=PRIORITY -o lifetime=DAYS
     rclone backend restore s3:bucket/path/to/directory -o priority=PRIORITY -o lifetime=DAYS
     rclone backend restore s3:bucket -o priority=PRIORITY -o lifetime=DAYS
+    rclone backend restore s3:bucket/path/to/directory -o priority=PRIORITY
 
 This flag also obeys the filters. Test first with --interactive/-i or --dry-run flags
 
@@ -4849,14 +5004,14 @@ if not.
 `,
 	Opts: map[string]string{
 		"priority":    "Priority of restore: Standard|Expedited|Bulk",
-		"lifetime":    "Lifetime of the active copy in days",
+		"lifetime":    "Lifetime of the active copy in days, ignored for INTELLIGENT-TIERING storage",
 		"description": "The optional description for the job.",
 	},
 }, {
 	Name:  "restore-status",
-	Short: "Show the restore status for objects being restored from GLACIER to normal storage",
-	Long: `This command can be used to show the status for objects being restored from GLACIER
-to normal storage.
+	Short: "Show the restore status for objects being restored from GLACIER or INTELLIGENT-TIERING storage",
+	Long: `This command can be used to show the status for objects being restored from GLACIER to normal storage
+or from INTELLIGENT-TIERING Archive Access / Deep Archive Access tier to the Frequent Access tier.
 
 Usage Examples:
 
@@ -4886,6 +5041,15 @@ It returns a list of status dictionaries.
                 "RestoreExpiryDate": "2023-09-06T12:29:19+01:00"
             },
             "StorageClass": "DEEP_ARCHIVE"
+        },
+        {
+            "Remote": "test.gz",
+            "VersionID": null,
+            "RestoreStatus": {
+                "IsRestoreInProgress": true,
+                "RestoreExpiryDate": "null"
+            },
+            "StorageClass": "INTELLIGENT_TIERING"
         }
     ]
 `,
@@ -5009,11 +5173,11 @@ func (f *Fs) Command(ctx context.Context, name string, arg []string, opt map[str
 			RestoreRequest: &types.RestoreRequest{},
 		}
 		if lifetime := opt["lifetime"]; lifetime != "" {
-			ilifetime, err := strconv.ParseInt(lifetime, 10, 64)
-			ilifetime32 := int32(ilifetime)
+			ilifetime, err := strconv.ParseInt(lifetime, 10, 32)
 			if err != nil {
 				return nil, fmt.Errorf("bad lifetime: %w", err)
 			}
+			ilifetime32 := int32(ilifetime)
 			req.RestoreRequest.Days = &ilifetime32
 		}
 		if priority := opt["priority"]; priority != "" {
@@ -5048,12 +5212,15 @@ func (f *Fs) Command(ctx context.Context, name string, arg []string, opt map[str
 				st.Status = "Not an S3 object"
 				return
 			}
-			if o.storageClass == nil || (*o.storageClass != "GLACIER" && *o.storageClass != "DEEP_ARCHIVE") {
-				st.Status = "Not GLACIER or DEEP_ARCHIVE storage class"
+			if o.storageClass == nil || (*o.storageClass != "GLACIER" && *o.storageClass != "DEEP_ARCHIVE" && *o.storageClass != "INTELLIGENT_TIERING") {
+				st.Status = "Not GLACIER or DEEP_ARCHIVE or INTELLIGENT_TIERING storage class"
 				return
 			}
 			bucket, bucketPath := o.split()
 			reqCopy := req
+			if *o.storageClass == "INTELLIGENT_TIERING" {
+				reqCopy.RestoreRequest.Days = nil
+			}
 			reqCopy.Bucket = &bucket
 			reqCopy.Key = &bucketPath
 			reqCopy.VersionId = o.versionID
@@ -5601,8 +5768,8 @@ func (o *Object) setMetaData(resp *s3.HeadObjectOutput) {
 		// it from listings then it may have millisecond precision, but
 		// if we read it from a HEAD/GET request then it will have
 		// second precision.
-		equalToWithinOneSecond := o.lastModified.Truncate(time.Second).Equal((*resp.LastModified).Truncate(time.Second))
-		newHasNs := (*resp.LastModified).Nanosecond() != 0
+		equalToWithinOneSecond := o.lastModified.Truncate(time.Second).Equal(resp.LastModified.Truncate(time.Second))
+		newHasNs := resp.LastModified.Nanosecond() != 0
 		if !equalToWithinOneSecond || newHasNs {
 			o.lastModified = *resp.LastModified
 		}
@@ -5734,10 +5901,29 @@ func (o *Object) downloadFromURL(ctx context.Context, bucketPath string, options
 		ContentEncoding:    header("Content-Encoding"),
 		ContentLanguage:    header("Content-Language"),
 		ContentType:        header("Content-Type"),
-		StorageClass:       types.StorageClass(*header("X-Amz-Storage-Class")),
+		StorageClass:       types.StorageClass(deref(header("X-Amz-Storage-Class"))),
 	}
 	o.setMetaData(&head)
 	return resp.Body, err
+}
+
+// middleware to stop the SDK adding `Accept-Encoding: identity`
+func removeDisableGzip() func(*middleware.Stack) error {
+	return func(stack *middleware.Stack) error {
+		_, err := stack.Finalize.Remove("DisableAcceptEncodingGzip")
+		return err
+	}
+}
+
+// middleware to set Accept-Encoding to how we want it
+//
+// This make sure we download compressed files as-is from all platforms
+func (f *Fs) acceptEncoding() (APIOptions []func(*middleware.Stack) error) {
+	APIOptions = append(APIOptions, removeDisableGzip())
+	if f.opt.UseAcceptEncodingGzip.Value {
+		APIOptions = append(APIOptions, smithyhttp.AddHeaderValue("Accept-Encoding", "gzip"))
+	}
+	return APIOptions
 }
 
 // Open an object for read
@@ -5773,11 +5959,8 @@ func (o *Object) Open(ctx context.Context, options ...fs.OpenOption) (in io.Read
 
 	var APIOptions []func(*middleware.Stack) error
 
-	// Override the automatic decompression in the transport to
-	// download compressed files as-is
-	if o.fs.opt.UseAcceptEncodingGzip.Value {
-		APIOptions = append(APIOptions, smithyhttp.AddHeaderValue("Accept-Encoding", "gzip"))
-	}
+	// Set the SDK to always download compressed files as-is
+	APIOptions = append(APIOptions, o.fs.acceptEncoding()...)
 
 	for _, option := range options {
 		switch option.(type) {
@@ -5915,7 +6098,7 @@ func (f *Fs) OpenChunkWriter(ctx context.Context, remote string, src fs.ObjectIn
 			if mOut == nil {
 				err = fserrors.RetryErrorf("internal error: no info from multipart upload")
 			} else if mOut.UploadId == nil {
-				err = fserrors.RetryErrorf("internal error: no UploadId in multpart upload: %#v", *mOut)
+				err = fserrors.RetryErrorf("internal error: no UploadId in multipart upload: %#v", *mOut)
 			}
 		}
 		return f.shouldRetry(ctx, err)
@@ -5928,8 +6111,8 @@ func (f *Fs) OpenChunkWriter(ctx context.Context, remote string, src fs.ObjectIn
 		chunkSize:            int64(chunkSize),
 		size:                 size,
 		f:                    f,
-		bucket:               mOut.Bucket,
-		key:                  mOut.Key,
+		bucket:               ui.req.Bucket,
+		key:                  ui.req.Key,
 		uploadID:             mOut.UploadId,
 		multiPartUploadInput: &mReq,
 		completedParts:       make([]types.CompletedPart, 0),
@@ -5964,7 +6147,7 @@ func (w *s3ChunkWriter) addMd5(md5binary *[]byte, chunkNumber int64) {
 	if extend := end - int64(len(w.md5s)); extend > 0 {
 		w.md5s = append(w.md5s, make([]byte, extend)...)
 	}
-	copy(w.md5s[start:end], (*md5binary)[:])
+	copy(w.md5s[start:end], (*md5binary))
 }
 
 // WriteChunk will write chunk number with reader bytes, where chunk number >= 0
@@ -5977,7 +6160,13 @@ func (w *s3ChunkWriter) WriteChunk(ctx context.Context, chunkNumber int, reader 
 	if do, ok := reader.(pool.DelayAccountinger); ok {
 		// To figure out this number, do a transfer and if the accounted size is 0 or a
 		// multiple of what it should be, increase or decrease this number.
-		do.DelayAccounting(3)
+		//
+		// For transfers over https the SDK does not sign the body whereas over http it does
+		if len(w.f.opt.Endpoint) >= 5 && strings.EqualFold(w.f.opt.Endpoint[:5], "http:") {
+			do.DelayAccounting(3)
+		} else {
+			do.DelayAccounting(2)
+		}
 	}
 
 	// create checksum of buffer for integrity checking
@@ -5994,7 +6183,7 @@ func (w *s3ChunkWriter) WriteChunk(ctx context.Context, chunkNumber int, reader 
 	}
 	md5sumBinary := m.Sum([]byte{})
 	w.addMd5(&md5sumBinary, int64(chunkNumber))
-	md5sum := base64.StdEncoding.EncodeToString(md5sumBinary[:])
+	md5sum := base64.StdEncoding.EncodeToString(md5sumBinary)
 
 	// S3 requires 1 <= PartNumber <= 10000
 	s3PartNumber := aws.Int32(int32(chunkNumber + 1))
@@ -6011,6 +6200,10 @@ func (w *s3ChunkWriter) WriteChunk(ctx context.Context, chunkNumber int, reader 
 		SSECustomerKey:       w.multiPartUploadInput.SSECustomerKey,
 		SSECustomerKeyMD5:    w.multiPartUploadInput.SSECustomerKeyMD5,
 	}
+	if w.f.opt.DirectoryBucket {
+		// Directory buckets do not support "Content-Md5" header
+		uploadPartReq.ContentMD5 = nil
+	}
 	var uout *s3.UploadPartOutput
 	err = w.f.pacer.Call(func() (bool, error) {
 		// rewind the reader on retry and after reading md5
@@ -6022,6 +6215,9 @@ func (w *s3ChunkWriter) WriteChunk(ctx context.Context, chunkNumber int, reader 
 		if err != nil {
 			if chunkNumber <= 8 {
 				return w.f.shouldRetry(ctx, err)
+			}
+			if fserrors.ContextError(ctx, &err) {
+				return false, err
 			}
 			// retry all chunks once have done the first few
 			return true, err
@@ -6287,7 +6483,7 @@ func (o *Object) prepareUpload(ctx context.Context, src fs.ObjectInfo, options [
 				if (multipart || o.fs.etagIsNotMD5) && !o.fs.opt.DisableChecksum {
 					// Set the md5sum as metadata on the object if
 					// - a multipart upload
-					// - the Etag is not an MD5, eg when using SSE/SSE-C
+					// - the Etag is not an MD5, eg when using SSE/SSE-C or directory buckets
 					// provided checksums aren't disabled
 					ui.req.Metadata[metaMD5Hash] = md5sumBase64
 				}
@@ -6302,7 +6498,7 @@ func (o *Object) prepareUpload(ctx context.Context, src fs.ObjectInfo, options [
 	if size >= 0 {
 		ui.req.ContentLength = &size
 	}
-	if md5sumBase64 != "" {
+	if md5sumBase64 != "" && !o.fs.opt.DirectoryBucket {
 		ui.req.ContentMD5 = &md5sumBase64
 	}
 	if o.fs.opt.RequesterPays {
